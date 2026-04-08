@@ -1,0 +1,102 @@
+<div class="h-full max-w-md mx-auto flex flex-col gap-4">
+  <div class="flex items-center gap-3 shrink-0">
+    <div class="flex-1 flex gap-2">
+      <div
+        class="flex-1 border-3 border-black p-2 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-center transition-all duration-300"
+        [class.bg-purple-500]="turn() === 'A'"
+        [class.text-white]="turn() === 'A'"
+        [class.bg-white]="turn() === 'B'"
+        [class.scale-105]="turn() === 'A'"
+        [class.opacity-60]="turn() === 'B'"
+      >
+        <span class="block text-[10px] font-black uppercase tracking-tighter">TEAM A</span>
+        <span class="text-xl font-black">{{ points().A }}</span>
+      </div>
+
+      <div
+        class="flex-1 border-3 border-black p-2 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-center transition-all duration-300"
+        [class.bg-purple-500]="turn() === 'B'"
+        [class.text-white]="turn() === 'B'"
+        [class.bg-white]="turn() === 'A'"
+        [class.scale-105]="turn() === 'B'"
+        [class.opacity-60]="turn() === 'A'"
+      >
+        <span class="block text-[10px] font-black uppercase tracking-tighter">TEAM B</span>
+        <span class="text-xl font-black">{{ points().B }}</span>
+      </div>
+    </div>
+
+    <div
+      class="w-16 h-16 shrink-0 rounded-full border-3 border-black flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200"
+      [class.bg-red-500]="timeLeft() < 10"
+      [class.text-white]="timeLeft() < 10"
+      [class.bg-white]="timeLeft() >= 10"
+      [class.animate-pulse]="timeLeft() < 10 && timeLeft() > 0"
+    >
+      <span class="text-xl font-black font-mono">{{ timeLeft() }}</span>
+    </div>
+  </div>
+
+  <div class="flex-1 relative min-h-0">
+    <div class="absolute inset-0 bg-black rounded-3xl translate-x-1.5 translate-y-1.5"></div>
+    <div
+      class="relative h-full bg-white border-4 border-black rounded-3xl p-6 flex flex-col overflow-hidden"
+    >
+      <div class="text-center mb-4">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
+          >Parola da indovinare</span
+        >
+        <h2 class="text-3xl font-black text-purple-600 uppercase leading-none mt-1">
+          {{ currentCard().word }}
+        </h2>
+      </div>
+
+      <div class="flex-1 flex flex-col justify-center gap-1 overflow-hidden py-2">
+        <p class="text-[10px] font-black text-center text-red-500 uppercase mb-1">Vietato dire:</p>
+        @for (f of currentCard().forbidden; track f) {
+          <div class="bg-slate-100 border-2 border-black/5 rounded-xl py-3 px-4 text-center">
+            <span class="text-lg font-bold text-slate-700 uppercase tracking-wide">{{ f }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="flex gap-3 mt-4 shrink-0">
+        <button
+          (click)="handleWord(false)"
+          class="flex-1 bg-red-500 border-3 border-black py-4 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+        >
+          <span class="font-black text-white uppercase italic">Errore!</span>
+        </button>
+        <button
+          (click)="handleWord(true)"
+          class="flex-1 bg-green-500 border-3 border-black py-4 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+        >
+          <span class="font-black text-white uppercase italic">Sì!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  [visible]="isOver()"
+  [closable]="false"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="neubrutal-dialog w-[90vw] max-w-[350px]"
+>
+  <div class="text-center">
+    <div class="text-5xl mb-4 animate-bounce">📢</div>
+    <h2 class="text-2xl font-black mb-1 uppercase tracking-tighter">Cambio Squadra!</h2>
+    <p class="font-bold text-slate-500 mb-6 italic">
+      Tocca al Team {{ turn() === 'A' ? 'B' : 'A' }}
+    </p>
+    <button
+      (click)="nextTurn()"
+      class="w-full bg-yellow-400 border-3 border-black py-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-lg italic"
+    >
+      Inizia ora!
+    </button>
+  </div>
+</p-dialog>

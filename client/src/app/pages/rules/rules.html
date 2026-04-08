@@ -1,0 +1,25 @@
+<div class="flex items-center justify-center min-h-screen bg-amber-400 p-6">
+  <div
+    class="max-w-md w-full bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl p-8 transform -rotate-1"
+  >
+    <h1 class="text-5xl font-black text-purple-600 mb-6 tracking-tighter italic">TABOO!</h1>
+
+    <div class="space-y-4 mb-8 text-lg font-bold text-slate-800">
+      <div class="flex items-center gap-3 bg-blue-100 p-3 rounded-2xl border-2 border-black">
+        <span class="text-2xl">👥</span> Due squadre: A vs B
+      </div>
+      <div class="flex items-center gap-3 bg-green-100 p-3 rounded-2xl border-2 border-black">
+        <span class="text-2xl">🚫</span> No parole proibite
+      </div>
+      <div class="flex items-center gap-3 bg-pink-100 p-3 rounded-2xl border-2 border-black">
+        <span class="text-2xl">⏱️</span> 60 secondi di fuoco
+      </div>
+    </div>
+
+    <p-button routerLink="/play" severity="help" class="w-full">
+      <ng-template pTemplate="content">
+        <span class="text-2xl font-black py-2">GIOCA ORA! 🚀</span>
+      </ng-template>
+    </p-button>
+  </div>
+</div>

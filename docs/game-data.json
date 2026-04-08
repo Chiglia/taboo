@@ -1,0 +1,7 @@
+[
+  {
+    "word": "Angular",
+    "forbidden": ["Framework", "Google", "Componenti", "Frontend"]
+  },
+  { "word": "Pizza", "forbidden": ["Margherita", "Forno", "Impasto", "Pomodoro"] }
+]
