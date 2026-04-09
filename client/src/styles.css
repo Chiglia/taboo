@@ -4,17 +4,107 @@
 @import 'tailwindcss-primeui';
 @import 'primeicons/primeicons.css';
 
-@keyframes cardPopIn {
+/* 1. ANIMAZIONI BASE */
+@keyframes cardEnter {
   0% {
-    transform: scale(0.9) translateY(10px);
+    transform: translateY(20px) scale(0.95);
     opacity: 0;
   }
   100% {
-    transform: scale(1) translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
+@keyframes scaleInIcon {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shakeError {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes successPop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes flashFade {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 2. CLASSI DI TRIGGER */
 .card-animate {
-  animation: cardPopIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: cardEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shake {
+  animation: shakeError 0.2s linear !important;
+  border-color: #ef4444 !important;
+  box-shadow: 4px 4px 0px 0px #b91c1c !important;
+}
+
+.animate-success {
+  animation: successPop 0.3s ease-out !important;
+  border-color: #22c55e !important;
+  box-shadow: 4px 4px 0px 0px #15803d !important;
+}
+
+/* 3. OVERLAYS E ICONE */
+.success-overlay,
+.error-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: 1.5rem;
+  animation: flashFade 0.3s forwards;
+}
+
+/* Stile per le icone PrimeIcons centrate */
+.pi-success-icon,
+.pi-error-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10rem;
+  color: white;
+  z-index: 30;
+  text-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
+  pointer-events: none;
+  animation: scaleInIcon 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }

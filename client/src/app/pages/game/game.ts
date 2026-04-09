@@ -30,6 +30,9 @@ export class Game {
   isOver = signal(false);
   shuffledCards = signal<Card[]>([]);
   cardElement = viewChild<ElementRef>('card');
+  skipsLeft = signal(3);
+  isShowingError = signal(false);
+  isShowingSuccess = signal(false);
 
   currentCard = computed(() => {
     const cards = this.shuffledCards();
@@ -37,19 +40,16 @@ export class Game {
   });
 
   constructor() {
-    // 1. Popola shuffledCards quando arrivano i dati
     effect(() => {
       const data = this.cardsResource.value();
       if (data && this.shuffledCards().length === 0) {
-        // Rimescoliamo i dati
         const shuffled = [...data].sort(() => Math.random() - 0.5);
         this.shuffledCards.set(shuffled);
       }
     });
 
-    // 2. Gestione animazione al cambio indice
     effect(() => {
-      this.currentIndex(); // Dipendenza
+      this.currentIndex();
       const el = this.cardElement()?.nativeElement;
       if (el) {
         el.classList.remove('card-animate');
@@ -58,7 +58,6 @@ export class Game {
       }
     });
 
-    // 3. Persistenza punti
     effect(() => localStorage.setItem('taboo_score', JSON.stringify(this.points())));
 
     this.startTimer();
@@ -66,7 +65,10 @@ export class Game {
 
   private startTimer() {
     const interval = setInterval(() => {
-      if (this.isOver()) { clearInterval(interval); return; }
+      if (this.isOver()) {
+        clearInterval(interval);
+        return;
+      }
       this.timeLeft.update(v => v - 1);
       if (this.timeLeft() <= 0) {
         clearInterval(interval);
@@ -76,18 +78,63 @@ export class Game {
   }
 
   handleWord(success: boolean) {
-    if (success) this.points.update(p => ({ ...p, [this.turn()]: p[this.turn()] + 1 }));
-    this.currentIndex.update(i => i + 1);
+    if (success) {
+      this.points.update(p => ({ ...p, [this.turn()]: p[this.turn()] + 1 }));
+      this.triggerSuccessAnimation();
+    } else {
+      this.points.update(p => {
+        const currentScore = p[this.turn()];
+        const newScore = Math.max(0, currentScore - 1);
+        return { ...p, [this.turn()]: newScore };
+      });
+      this.triggerErrorAnimation();
+    }
+  }
 
-    // Se finiscono le carte, rimescola
+  private triggerSuccessAnimation() {
+    this.isShowingSuccess.set(true);
+    if ('vibrate' in navigator) navigator.vibrate([80, 40]);
+    setTimeout(() => {
+      this.isShowingSuccess.set(false);
+      this.goToNextCard();
+    }, 300);
+  }
+
+  private triggerErrorAnimation() {
+    this.isShowingError.set(true);
+    if ('vibrate' in navigator) navigator.vibrate([80, 40, 80]);
+    setTimeout(() => {
+      this.isShowingError.set(false);
+      this.goToNextCard();
+    }, 250);
+  }
+
+  skipWord() {
+    if (this.skipsLeft() > 0) {
+      this.skipsLeft.update(s => s - 1);
+      this.goToNextCard();
+      if ('vibrate' in navigator) navigator.vibrate(30);
+    }
+  }
+
+  private goToNextCard() {
+    const el = this.cardElement()?.nativeElement;
+    if (el) {
+      el.classList.remove('card-animate');
+      void el.offsetWidth;
+      el.classList.add('card-animate');
+    }
+    this.currentIndex.update(i => i + 1);
     if (this.currentIndex() >= this.shuffledCards().length) {
-      this.shuffledCards.set([...this.shuffledCards()].sort(() => Math.random() - 0.5));
+      const reshuffled = [...this.shuffledCards()].sort(() => Math.random() - 0.5);
+      this.shuffledCards.set(reshuffled);
       this.currentIndex.set(0);
     }
   }
 
   nextTurn() {
     this.turn.update(t => t === 'A' ? 'B' : 'A');
+    this.skipsLeft.set(3);
     this.timeLeft.set(60);
     this.isOver.set(false);
     this.startTimer();
