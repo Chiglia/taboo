@@ -21,10 +21,9 @@ export class Rules {
       if (current !== null && current > 1) {
         this.countdown.set(current - 1);
       } else if (current === 1) {
-        this.countdown.set(0); // Mostra "VIA!"
+        this.countdown.set(0);
       } else {
         clearInterval(interval);
-        // Navigazione verso il gioco
         this.router.navigate(['/game']);
       }
     }, 1000);
