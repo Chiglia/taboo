@@ -1,7 +1,7 @@
-import { Component, computed, effect, ElementRef, inject, OnDestroy, resource, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, resource, signal, viewChild } from '@angular/core';
 import { SharedModule } from '../../../shared.module';
 import { DialogModule } from 'primeng/dialog';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Settings } from "../../dialogs/settings/settings";
 import { GameOver } from "../../dialogs/game-over/game-over";
@@ -21,7 +21,7 @@ export type Language = 'it' | 'en';
   styles: ``,
   host: { class: 'block h-dvh w-full overflow-hidden bg-amber-400 p-4 font-sans selection:bg-purple-200' }
 })
-export class Game implements OnDestroy {
+export class Game implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private timerInterval: any = null;
   private hasPlayedGameOver = false;
@@ -45,30 +45,41 @@ export class Game implements OnDestroy {
   shuffledCards = signal<Card[]>([]);
   skipsLeft = signal(3);
 
+  // --- TRADUZIONI UI ---
+  // Questo computed aggiorna automaticamente i testi nel template
+  ui = computed(() => {
+    return this.language() === 'it'
+      ? { guess: 'Indovina:', forbidden: 'Vietato dire:', skip: 'Salta', error: 'Errore!', yes: 'Sì!' }
+      : { guess: 'Guess:', forbidden: 'Forbidden words:', skip: 'Skip', error: 'Wrong!', yes: 'Yes!' };
+  });
+
   // --- ANIMAZIONI ---
   isShowingError = signal(false);
   isShowingSuccess = signal(false);
   isAnimating = computed(() => this.isShowingError() || this.isShowingSuccess());
   cardElement = viewChild<ElementRef>('card');
 
-  // --- DATA ---
-  cardsResource = resource({
-    loader: () => firstValueFrom(this.http.get<Card[]>('game-data.json'))
-  });
+  // --- DATA LOADING (REATTIVO ALLA LINGUA) ---
+  cardsResource = httpResource<Card[]>(() =>
+    this.language() === 'it' ? 'game-data.json' : 'game-data-en.json'
+  );
 
   currentCard = computed(() => {
-    const cards = this.shuffledCards();
+    const cards = this.cardsResource.value() ?? [];
     return cards.length > 0 ? cards[this.currentIndex() % cards.length] : null;
   });
 
   constructor() {
+    // Effetto per mescolare le carte ogni volta che cambiano i dati (es. cambio lingua)
     effect(() => {
       const data = this.cardsResource.value();
-      if (data?.length && !this.shuffledCards().length) {
+      if (data && data.length > 0) {
         this.shuffledCards.set([...data].sort(() => Math.random() - 0.5));
+        this.currentIndex.set(0);
       }
     });
 
+    // Persistenza
     effect(() => localStorage.setItem('taboo_score', JSON.stringify(this.points())));
     effect(() => localStorage.setItem('taboo_feedback', this.feedbackMode()));
     effect(() => localStorage.setItem('taboo_lang', this.language()));
@@ -76,6 +87,13 @@ export class Game implements OnDestroy {
 
   ngOnInit() {
     this.startTimer();
+  }
+
+  // Metodo per gestire il cambio lingua dal template
+  handleLanguageChange(newLang: Language) {
+    if (this.language() !== newLang) {
+      this.language.set(newLang);
+    }
   }
 
   private startTimer() {
